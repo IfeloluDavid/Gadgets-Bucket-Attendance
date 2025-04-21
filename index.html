@@ -1,76 +1,512 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>Login | Attendance System</title>
-  <script src="https://cdn.jsdelivr.net/npm/aws-amplify@5.0.4/dist/aws-amplify.min.js"></script>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-    }
-    form {
-      padding: 2rem;
-      border: 1px solid #ccc;
-      border-radius: 10px;
-    }
-    input {
-      display: block;
-      width: 100%;
-      margin-bottom: 1rem;
-      padding: 0.5rem;
-    }
-    button {
-      padding: 0.5rem 1rem;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gadgets Bucket - Staff Attendance Dashboard</title>
+    <style>
+        :root {
+            --primary-color: #3498db;
+            --secondary-color: #2ecc71;
+            --danger-color: #e74c3c;
+            --dark-color: #2c3e50;
+            --light-color: #ecf0f1;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #f5f7fa;
+        }
+        
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 0;
+            border-bottom: 1px solid #ddd;
+            margin-bottom: 30px;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+        }
+        
+        .logo img {
+            width: 50px;
+            height: 50px;
+            margin-right: 10px;
+        }
+        
+        .logo h1 {
+            color: var(--primary-color);
+            font-size: 24px;
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+        }
+        
+        .user-info img {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+        
+        .welcome-msg {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .welcome-msg h2 {
+            font-size: 28px;
+            color: var(--dark-color);
+            margin-bottom: 10px;
+        }
+        
+        .welcome-msg p {
+            font-size: 16px;
+            color: #666;
+        }
+        
+        .attendance-card {
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .status {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+        
+        .present {
+            color: var(--secondary-color);
+        }
+        
+        .absent {
+            color: var(--danger-color);
+        }
+        
+        .attendance-details {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 30px;
+        }
+        
+        .detail-item {
+            flex: 1;
+            padding: 15px;
+            border-right: 1px solid #eee;
+        }
+        
+        .detail-item:last-child {
+            border-right: none;
+        }
+        
+        .detail-item h3 {
+            font-size: 16px;
+            color: #666;
+            margin-bottom: 10px;
+        }
+        
+        .detail-item p {
+            font-size: 20px;
+            font-weight: bold;
+            color: var(--dark-color);
+        }
+        
+        .mark-attendance {
+            text-align: center;
+            margin-top: 30px;
+        }
+        
+        button {
+            padding: 12px 30px;
+            font-size: 16px;
+            border: none;
+            border-radius: 5px;
+            background-color: var(--primary-color);
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        button:hover {
+            background-color: #2980b9;
+        }
+        
+        button:disabled {
+            background-color: #95a5a6;
+            cursor: not-allowed;
+        }
+        
+        footer {
+            text-align: center;
+            margin-top: 50px;
+            padding: 20px 0;
+            color: #7f8c8d;
+            font-size: 14px;
+        }
+        
+        .history-section {
+            margin-top: 40px;
+        }
+        
+        .history-section h2 {
+            font-size: 20px;
+            color: var(--dark-color);
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        th {
+            background-color: var(--light-color);
+            color: var(--dark-color);
+        }
+        
+        tr:hover {
+            background-color: #f9f9f9;
+        }
+
+        .notification {
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .notification.success {
+            background-color: rgba(46, 204, 113, 0.2);
+            border: 1px solid var(--secondary-color);
+            color: var(--secondary-color);
+        }
+
+        .notification.error {
+            background-color: rgba(231, 76, 60, 0.2);
+            border: 1px solid var(--danger-color);
+            color: var(--danger-color);
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+            margin-left: 10px;
+            vertical-align: middle;
+            display: none;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
 </head>
 <body>
-
-  <form id="loginForm">
-    <h2>Staff Login</h2>
-    <input type="text" id="username" placeholder="Username" required />
-    <input type="password" id="password" placeholder="Password" required />
-    <button type="submit">Login</button>
-    <p id="message"></p>
-  </form>
-
-  <script>
-    const Amplify = window.aws_amplify.Amplify;
-    const Auth = window.aws_amplify.Auth;
-
-    Amplify.configure({
-      Auth: {
-        region: 'us-east-1', // Replace with your region
-        userPoolId: 'us-east-1_5gW8xddSS', // Replace with your User Pool ID
-        userPoolWebClientId: '3omkemvun659o2o0eccem4pgbo', // Replace with App Client ID
+    <div class="container">
+        <header>
+            <div class="logo">
+                <img src="/api/placeholder/50/50" alt="Gadgets Bucket Logo">
+                <h1>Gadgets Bucket</h1>
+            </div>
+            <div class="user-info">
+                <img src="/api/placeholder/40/40" alt="User Avatar">
+                <div>
+                    <p>Welcome, <span id="user-name">Rajesh Kumar</span></p>
+                    <small id="user-role">Support Staff</small>
+                </div>
+            </div>
+        </header>
         
-      }
-    });
+        <div id="notification" class="notification"></div>
+        
+        <div class="welcome-msg">
+            <h2>Support Staff Attendance Dashboard</h2>
+            <p>Track your attendance and earnings for your customer support sessions</p>
+        </div>
+        
+        <div class="attendance-card">
+            <div class="status absent" id="attendance-status">Not Marked</div>
+            <p id="attendance-message">You haven't marked your attendance for today's shift yet</p>
+            
+            <div class="attendance-details">
+                <div class="detail-item">
+                    <h3>Check-in Time</h3>
+                    <p id="check-in-time">--:-- --</p>
+                </div>
+                <div class="detail-item">
+                    <h3>Shift Duration</h3>
+                    <p id="shift-duration">4 hours</p>
+                </div>
+                <div class="detail-item">
+                    <h3>Today's Earnings</h3>
+                    <p id="today-earnings">₹0</p>
+                </div>
+            </div>
+            
+            <div class="mark-attendance">
+                <button id="attendance-btn">
+                    Mark Attendance
+                    <span id="loading-spinner" class="loading"></span>
+                </button>
+            </div>
+        </div>
+        
+        <div class="history-section">
+            <h2>Recent Attendance History</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Check-in Time</th>
+                        <th>Status</th>
+                        <th>Earnings</th>
+                    </tr>
+                </thead>
+                <tbody id="history-table-body">
+                    <!-- Attendance history will be loaded here -->
+                </tbody>
+            </table>
+        </div>
+        
+        <footer>
+            <p>© 2025 Gadgets Bucket. All rights reserved.</p>
+            <p>Gadgets Bucket, Electronic Support Division, Bangalore, India</p>
+        </footer>
+    </div>
 
-    const form = document.getElementById('loginForm');
-    const message = document.getElementById('message');
-
-    form.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const username = document.getElementById('username').value;
-      const password = document.getElementById('password').value;
-
-      try {
-        const user = await Auth.signIn(username, password);
-        message.textContent = 'Login successful!';
-        // Store user info and redirect
-        localStorage.setItem('staff_id', user.username);
-        window.location.href = 'attendance.html';
-      } catch (err) {
-        console.error(err);
-        message.textContent = 'Login failed. Check your credentials.';
-      }
-    });
-  </script>
-
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // AWS API Gateway endpoint URL
+            const API_ENDPOINT = 'https://your-api-gateway-endpoint.execute-api.region.amazonaws.com/stage';
+            
+            // Configuration values
+            const HOURLY_RATE = 50; // ₹50 per hour
+            const SHIFT_DURATION = 4; // 4 hours
+            const SESSION_EARNINGS = HOURLY_RATE * SHIFT_DURATION; // ₹200 per session
+            
+            // Get DOM elements
+            const attendanceBtn = document.getElementById('attendance-btn');
+            const attendanceStatus = document.getElementById('attendance-status');
+            const attendanceMessage = document.getElementById('attendance-message');
+            const checkInTime = document.getElementById('check-in-time');
+            const todayEarnings = document.getElementById('today-earnings');
+            const historyTableBody = document.getElementById('history-table-body');
+            const notification = document.getElementById('notification');
+            const loadingSpinner = document.getElementById('loading-spinner');
+            const userName = document.getElementById('user-name').textContent;
+            
+            // Function to show notifications
+            function showNotification(message, type) {
+                notification.textContent = message;
+                notification.className = 'notification ' + type;
+                notification.style.display = 'block';
+                
+                // Auto-hide after 5 seconds
+                setTimeout(() => {
+                    notification.style.display = 'none';
+                }, 5000);
+            }
+            
+            // Format date for display
+            function formatDate(date) {
+                return date.toLocaleDateString('en-US', {
+                    day: '2-digit',
+                    month: 'short',
+                    year: 'numeric'
+                });
+            }
+            
+            // Format time for display
+            function formatTime(date) {
+                return date.toLocaleTimeString('en-US', { 
+                    hour: '2-digit', 
+                    minute: '2-digit',
+                    hour12: true 
+                });
+            }
+            
+            // Check if attendance has already been marked today
+            function checkTodayAttendance() {
+                const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD format
+                
+                fetch(`${API_ENDPOINT}/attendance?userId=${encodeURIComponent(userName)}&date=${today}`)
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Network response was not ok');
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        if (data && data.Items && data.Items.length > 0) {
+                            // Attendance already marked for today
+                            const attendance = data.Items[0];
+                            markAttendanceUI(new Date(attendance.checkInTime));
+                            attendanceBtn.disabled = true;
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error checking today\'s attendance:', error);
+                    });
+            }
+            
+            // Load attendance history
+            function loadAttendanceHistory() {
+                fetch(`${API_ENDPOINT}/attendance/history?userId=${encodeURIComponent(userName)}`)
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Network response was not ok');
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        // Clear existing rows
+                        historyTableBody.innerHTML = '';
+                        
+                        if (data && data.Items && data.Items.length > 0) {
+                            // Sort by date in descending order (newest first)
+                            data.Items.sort((a, b) => new Date(b.date) - new Date(a.date));
+                            
+                            // Add rows to the table
+                            data.Items.forEach(item => {
+                                const row = document.createElement('tr');
+                                const checkInDate = new Date(item.checkInTime);
+                                
+                                row.innerHTML = `
+                                    <td>${formatDate(checkInDate)}</td>
+                                    <td>${formatTime(checkInDate)}</td>
+                                    <td>Present</td>
+                                    <td>₹${item.earnings}</td>
+                                `;
+                                
+                                historyTableBody.appendChild(row);
+                            });
+                        } else {
+                            // No attendance records found
+                            const row = document.createElement('tr');
+                            row.innerHTML = `
+                                <td colspan="4" style="text-align: center;">No attendance records found</td>
+                            `;
+                            historyTableBody.appendChild(row);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error loading attendance history:', error);
+                        showNotification('Failed to load attendance history. Please try again later.', 'error');
+                    });
+            }
+            
+            // Update UI after marking attendance
+            function markAttendanceUI(checkInDateTime) {
+                const formattedTime = formatTime(checkInDateTime);
+                
+                // Update UI elements
+                attendanceStatus.textContent = 'Present';
+                attendanceStatus.classList.remove('absent');
+                attendanceStatus.classList.add('present');
+                attendanceMessage.textContent = 'You have marked your attendance for today\'s shift';
+                checkInTime.textContent = formattedTime;
+                todayEarnings.textContent = `₹${SESSION_EARNINGS}`;
+                attendanceBtn.disabled = true;
+                attendanceBtn.textContent = 'Attendance Marked';
+            }
+            
+            // Mark attendance function
+            function markAttendance() {
+                // Show loading spinner
+                loadingSpinner.style.display = 'inline-block';
+                attendanceBtn.disabled = true;
+                
+                const now = new Date();
+                const checkInTime = now.toISOString();
+                const today = checkInTime.split('T')[0]; // YYYY-MM-DD format
+                
+                // Prepare attendance data
+                const attendanceData = {
+                    userId: userName,
+                    date: today,
+                    checkInTime: checkInTime,
+                    earnings: SESSION_EARNINGS
+                };
+                
+                // Send attendance data to API Gateway
+                fetch(`${API_ENDPOINT}/attendance`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(attendanceData)
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    // Hide loading spinner
+                    loadingSpinner.style.display = 'none';
+                    
+                    // Update UI
+                    markAttendanceUI(now);
+                    
+                    // Show success notification
+                    showNotification('Attendance marked successfully!', 'success');
+                    
+                    // Reload attendance history
+                    loadAttendanceHistory();
+                })
+                .catch(error => {
+                    // Hide loading spinner
+                    loadingSpinner.style.display = 'none';
+                    attendanceBtn.disabled = false;
+                    
+                    console.error('Error marking attendance:', error);
+                    showNotification('Failed to mark attendance. Please try again.', 'error');
+                });
+            }
+            
+            // Add event listener to attendance button
+            attendanceBtn.addEventListener('click', markAttendance);
+            
+            // Initialize - check if attendance is already marked and load history
+            checkTodayAttendance();
+            loadAttendanceHistory();
+        });
+    </script>
 </body>
 </html>
